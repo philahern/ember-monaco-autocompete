@@ -1,12 +1,15 @@
-<h2 id="title">Welcome to Ember</h2>
+<h2 id="title">Ember Monaco Editor Test</h2>
 
+<CodeEditor
+  @language="python"
+  @code={{sample1}}
+  @completionItemProvider={{action completionItemProvider}}
+  @onChange={{action (mut sample1)}}
+  @onReady={{action editorReady}}
+  @theme="vs-light"
+/>
 
-{{code-editor
-  language="typescript"
-  code=sample1
-  onChange=(action (mut sample1))
-  theme="light"
-}}
+<h2>Output: </h2>
 <pre>
   {{sample1}}
 </pre>

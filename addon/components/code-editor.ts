@@ -16,6 +16,7 @@ export default class CodeEditor extends Component {
   public _conn!: IChildConnectionObject<any>;
   public theme: 'vs-dark' | 'vs-light' = 'vs-dark'; // TODO: proper default value
   public readOnly?: boolean;
+  public completionItemProvider?: (context:any) => any;
   public onChange?: (v: string) => any;
   public onKeyCommand?: (evt: CodeEditorKeyCommand) => any;
   public onReady?: (editor: mon.editor.IStandaloneCodeEditor) => any;
@@ -50,6 +51,12 @@ export default class CodeEditor extends Component {
     }
   }
 
+  public onCompletionEvent(context:any) {
+    if (this.completionItemProvider) {
+      return this.completionItemProvider(context);
+    }
+  }
+
   public didInsertElement() {
     super.didInsertElement();
     const container = this.element.querySelector<HTMLDivElement>(
@@ -63,6 +70,7 @@ export default class CodeEditor extends Component {
       methods: {
         onValueChanged: this.onEditorTextChanged.bind(this),
         keyCommand: this._onKeyCommand.bind(this),
+        completionEvent: this.onCompletionEvent.bind(this),
         onReady: this.onEditorReady.bind(this)
       },
       url: '/ember-monaco/frame.html'

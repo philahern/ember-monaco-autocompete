@@ -70,6 +70,7 @@ export function setupEditor(cfg: {
   theme: string;
   value: string;
   language: 'typescript' | 'javascript';
+  completionItemProvider: any;
   readOnly?: boolean;
 }) {
   require(['vs/editor/editor.main'], async () => {
@@ -79,13 +80,39 @@ export function setupEditor(cfg: {
         throw new Error('No wrapper found');
       }
       const { language, theme, value, readOnly=false } = cfg;
+      const client = await conn.promise;
+      //monaco.languages.setMonarchTokensProvider('python',monarchTokensProvider);
+
+      monaco.languages.registerCompletionItemProvider(language, {
+
+        triggerCharacters: ["."],
+
+        provideCompletionItems: async (model: any, position: any) => {
+
+          const textUntilPosition = model.getValueInRange({startLineNumber: 1, startColumn: 1, endLineNumber: position.lineNumber, endColumn: position.column});
+          const initialWordObject = model.getWordUntilPosition(position);
+          const range = {
+            startLineNumber: position.lineNumber,
+            endLineNumber: position.lineNumber,
+            startColumn: initialWordObject.startColumn,
+            endColumn: initialWordObject.endColumn 
+          };
+
+          position.column -= 1; // account for dot
+          const word = model.getWordUntilPosition(position);
+          const suggestions = await client.completionEvent({ textUntilPosition, word, range });
+
+          return suggestions;
+        }
+
+      });
+
       const ed = (editor = window.editor = monaco.editor.create(wrapper, {
         language,
         theme,
         value,
         readOnly
       }));
-      const client = await conn.promise;
       ed.onDidChangeModelContent(event => {
         if (!event) {
           return;
